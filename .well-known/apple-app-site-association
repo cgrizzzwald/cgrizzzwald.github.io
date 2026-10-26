@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["9W7R29SVMD.com.hungry.pug"],
+        "components": [
+          { "/": "/c" },
+          { "/": "/c/*" }
+        ]
+      }
+    ]
+  }
+}
