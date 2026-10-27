@@ -7,6 +7,7 @@
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body {
     margin: 0;
     min-height: 100vh;
@@ -34,24 +35,84 @@
     font-size: 18px;
     text-decoration: none;
   }
+  /* With a challenge to open, OPEN HUNGRY PUG is the big one and the App Store is secondary. */
+  .button.open { display: block; min-height: 64px; padding: 18px 24px; font-size: 22px; letter-spacing: 0.02em; }
+  .button.secondary { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.7); }
   .hint { margin: 24px 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.65); }
+  .hint.before { margin: 28px 0 12px; }
+
+  /* WeChat's browser can't open the app or the App Store: point at its ··· menu instead. */
+  .wechat { margin: 8px 0 0; }
+  .wechat p { margin: 0 0 12px; font-size: 22px; font-weight: 800; line-height: 1.35; }
+  .wechat .zh { color: #FFCC33; }
+  .nowrap { white-space: nowrap; }
+  .arrow {
+    position: fixed;
+    top: 4px;
+    right: 10px;
+    width: 120px;
+    height: 120px;
+    color: #FF7A2F;
+    animation: bounce 0.9s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .arrow svg { width: 100%; height: 100%; display: block; }
+  @keyframes bounce {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-12px, 14px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .arrow { animation: none; } }
 </style>
 </head>
 <body>
+<div class="arrow" id="wechat-arrow" aria-hidden="true" hidden>
+  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 82 L80 20"/>
+    <path d="M38 18 H82 V62"/>
+  </svg>
+</div>
 <main>
   <h1>Someone challenged you in Hungry Pug!</h1>
   <p class="id" id="challenge" hidden>Challenge <strong id="challenge-id"></strong></p>
-  <a class="button" href="https://apps.apple.com/app/id6449939021">Get it on the App Store</a>
-  <p class="hint">Already have the app? Tap the link again.</p>
+  <div class="wechat" id="wechat" hidden>
+    <p>Tap ··· then Open in Safari</p>
+    <p class="zh" lang="zh-Hans">点击右上角 ··· 选择<span class="nowrap">「在Safari中打开」</span></p>
+  </div>
+  <div id="actions">
+    <a class="button open" id="open" hidden>OPEN HUNGRY PUG</a>
+    <p class="hint before" id="store-hint" hidden>Don't have it yet?</p>
+    <a class="button" id="store" href="https://apps.apple.com/app/id6449939021">Get it on the App Store</a>
+    <p class="hint" id="again-hint">Already have the app? Tap the link again.</p>
+  </div>
 </main>
 <script>
   (function () {
     var raw = new URLSearchParams(location.search).get("id") || "";
     var id = raw.trim().toUpperCase();
-    // Same alphabet and length as the app's challenge IDs; anything else isn't shown.
-    if (/^[2-9A-HJKMNP-Z]{6}$/.test(id)) {
+    // Same alphabet and length as the app's challenge IDs; anything else isn't shown or used.
+    var valid = /^[2-9A-HJKMNP-Z]{6}$/.test(id);
+    if (valid) {
       document.getElementById("challenge-id").textContent = id;
       document.getElementById("challenge").hidden = false;
+    }
+
+    // WeChat (MicroMessenger) blocks universal links, app launches and the App Store: the
+    // player has to open this page in Safari first.
+    if (/MicroMessenger/i.test(navigator.userAgent)) {
+      document.getElementById("actions").hidden = true;
+      document.getElementById("wechat").hidden = false;
+      document.getElementById("wechat-arrow").hidden = false;
+      return;
+    }
+
+    // Safari and the rest: open the challenge in the app with its own hungrypug:// link.
+    if (valid) {
+      var open = document.getElementById("open");
+      open.href = "hungrypug://c?id=" + encodeURIComponent(id);
+      open.hidden = false;
+      document.getElementById("store-hint").hidden = false;
+      document.getElementById("store").classList.add("secondary");
+      document.getElementById("again-hint").hidden = true;
     }
   })();
 </script>
