@@ -40,6 +40,8 @@
   .button.secondary { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.7); }
   .hint { margin: 24px 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.65); }
   .hint.before { margin: 28px 0 12px; }
+  .needs { margin: 0 0 24px; font-size: 22px; font-weight: 800; line-height: 1.35; }
+  .retry { color: #fff; text-decoration: underline; }
 
   /* WeChat's browser can't open the app or the App Store: point at its ··· menu instead. */
   .wechat { margin: 8px 0 0; }
@@ -80,9 +82,17 @@
   </div>
   <div id="actions">
     <a class="button open" id="open" hidden>OPEN HUNGRY PUG</a>
-    <p class="hint before" id="store-hint" hidden>Don't have it yet?</p>
-    <a class="button" id="store" href="https://apps.apple.com/app/id6449939021">Get it on the App Store</a>
+    <p class="hint before" id="store-hint" hidden>Don't have it, or haven't updated in a while?</p>
+    <a class="button" id="store" href="https://apps.apple.com/app/id6449939021">Get the latest Hungry Pug</a>
     <p class="hint" id="again-hint">Already have the app? Tap the link again.</p>
+  </div>
+  <!-- Shown when OPEN HUNGRY PUG didn't open the app: it isn't installed, or it's a version
+       from before challenges. The page can't tell which; the App Store shows GET or UPDATE. -->
+  <div id="update" hidden>
+    <p class="needs">You need the latest Hungry Pug to play this challenge.</p>
+    <a class="button open" href="https://apps.apple.com/app/id6449939021">GO TO THE APP STORE</a>
+    <p class="hint">Once it's installed or updated, tap your challenge link again.</p>
+    <p class="hint"><a class="retry" id="retry">Try opening it again</a></p>
   </div>
 </main>
 <script>
@@ -107,12 +117,32 @@
 
     // Safari and the rest: open the challenge in the app with its own hungrypug:// link.
     if (valid) {
+      var link = "hungrypug://c?id=" + encodeURIComponent(id);
       var open = document.getElementById("open");
-      open.href = "hungrypug://c?id=" + encodeURIComponent(id);
+      open.href = link;
       open.hidden = false;
       document.getElementById("store-hint").hidden = false;
       document.getElementById("store").classList.add("secondary");
       document.getElementById("again-hint").hidden = true;
+
+      // Versions before 2.3 (and phones without the app) don't know hungrypug:// links:
+      // Safari says the address is invalid and the page stays put. If we're still here a
+      // moment after the tap, send them to the App Store, which shows GET or UPDATE itself.
+      var timer = null;
+      var cancel = function () { clearTimeout(timer); timer = null; };
+      document.addEventListener("visibilitychange", function () { if (document.hidden) cancel(); });
+      window.addEventListener("pagehide", cancel);
+      var tryOpen = function () {
+        cancel();
+        timer = setTimeout(function () {
+          document.getElementById("actions").hidden = true;
+          document.getElementById("update").hidden = false;
+        }, 2500);
+      };
+      open.addEventListener("click", tryOpen);
+      var retry = document.getElementById("retry");
+      retry.href = link;
+      retry.addEventListener("click", tryOpen);
     }
   })();
 </script>
