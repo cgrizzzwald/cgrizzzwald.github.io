@@ -86,13 +86,15 @@
     <a class="button" id="store" href="https://apps.apple.com/app/id6449939021">Get the latest Hungry Pug</a>
     <p class="hint" id="again-hint">Already have the app? Tap the link again.</p>
   </div>
-  <!-- Shown when OPEN HUNGRY PUG didn't open the app: it isn't installed, or it's a version
-       from before challenges. The page can't tell which; the App Store shows GET or UPDATE. -->
+  <!-- Shown when OPEN HUNGRY PUG didn't open the app: it isn't installed, it's a version from
+       before challenges, or an in-app browser like WhatsApp's blocked the link. The page can't
+       tell which, so it offers Safari and the App Store (which shows GET or UPDATE itself). -->
   <div id="update" hidden>
-    <p class="needs">You need the latest Hungry Pug to play this challenge.</p>
+    <p class="needs">Didn't open? Open this page in Safari, then tap OPEN HUNGRY PUG.</p>
+    <p class="hint"><a class="retry" id="retry">Try opening it again</a></p>
+    <p class="hint before">Don't have it, or haven't updated in a while?</p>
     <a class="button open" href="https://apps.apple.com/app/id6449939021">GO TO THE APP STORE</a>
     <p class="hint">Once it's installed or updated, tap your challenge link again.</p>
-    <p class="hint"><a class="retry" id="retry">Try opening it again</a></p>
   </div>
 </main>
 <script>
@@ -125,9 +127,9 @@
       document.getElementById("store").classList.add("secondary");
       document.getElementById("again-hint").hidden = true;
 
-      // Versions before 2.3 (and phones without the app) don't know hungrypug:// links:
-      // Safari says the address is invalid and the page stays put. If we're still here a
-      // moment after the tap, send them to the App Store, which shows GET or UPDATE itself.
+      // Versions before 2.3 and phones without the app don't know hungrypug:// links, and in-app
+      // browsers may block them: the page stays put. If we're still here a moment after the tap,
+      // offer Safari and the App Store.
       var timer = null;
       var cancel = function () { clearTimeout(timer); timer = null; };
       document.addEventListener("visibilitychange", function () { if (document.hidden) cancel(); });
